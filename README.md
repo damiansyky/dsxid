@@ -82,9 +82,6 @@ website; this page is a local history.
 Settings holds passphrase changes, encrypted backups, and the local data folder.
 The application window has a fixed size, so the layout stays consistent.
 
-The **Update** link beside the version at the bottom of the window shows the
-current version. Set `UPDATE_URL` in `frontend/dist/app.js` to the public
-download page when it becomes available.
 
 ![Settings](docs/screenshots/screenshot-settings.png)
 
