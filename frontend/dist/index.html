@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#f3f3f3">
+  <title>DsxID</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <svg class="svg-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 7.5-2"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3Z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 3l4 4M14 6l3 3"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 0 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 0 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 0 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 6.2A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a18 18 0 0 1-3 4M6.6 6.6C3.6 8.6 2 12 2 12s3.5 7 10 7a10.7 10.7 0 0 0 5.4-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-warning" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  </svg>
+
+  <main id="app" class="app">
+    <!-- ============ SETUP ============ -->
+    <section id="screen-setup" class="screen auth-screen" data-screen="setup" hidden>
+      <div class="auth-content">
+        <div class="auth-card">
+          <div class="auth-card-head">
+            <span class="app-icon"><svg><use href="#i-key"/></svg></span>
+            <div>
+              <h1>Create identity</h1>
+              <p>Generate your own key for passwordless sign-in.</p>
+            </div>
+          </div>
+
+          <div class="info-bar">
+            <svg><use href="#i-info"/></svg>
+            <span>Your private key stays encrypted on this computer. Services receive only the public part.</span>
+          </div>
+
+          <form id="create-form" novalidate>
+            <div class="field">
+              <label for="create-name">Name or nickname <span class="optional">optional</span></label>
+              <input id="create-name" type="text" maxlength="48" placeholder="for example Alex" autocomplete="nickname" spellcheck="false">
+            </div>
+
+            <div class="field">
+              <div class="label-row">
+                <label for="create-pass">Passphrase</label>
+                <span id="strength-label" class="strength-label" data-level="none">at least 8 characters</span>
+              </div>
+              <div class="input-wrap">
+                <input id="create-pass" type="password" minlength="8" placeholder="choose a strong passphrase" autocomplete="new-password" required>
+                <button type="button" class="reveal" data-reveal="create-pass" aria-label="Show passphrase">
+                  <svg class="eye-on"><use href="#i-eye"/></svg><svg class="eye-off"><use href="#i-eye-off"/></svg>
+                </button>
+              </div>
+              <div class="strength-bars" id="strength-bars" aria-hidden="true"><span></span><span></span><span></span></div>
+            </div>
+
+            <div class="field">
+              <label for="create-pass2">Confirm passphrase</label>
+              <div class="input-wrap">
+                <input id="create-pass2" type="password" minlength="8" placeholder="repeat the passphrase" autocomplete="new-password" required>
+                <button type="button" class="reveal" data-reveal="create-pass2" aria-label="Show passphrase">
+                  <svg class="eye-on"><use href="#i-eye"/></svg><svg class="eye-off"><use href="#i-eye-off"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <label class="checkbox">
+              <input id="create-terms" type="checkbox">
+              <span>I understand that this identity cannot be recovered without the passphrase.</span>
+            </label>
+
+            <p id="create-error" class="form-error" role="alert"></p>
+
+            <button class="btn btn-primary btn-block" type="submit" id="create-submit">
+              <span>Create identity</span>
+            </button>
+          </form>
+
+          <div class="auth-divider"><span>or</span></div>
+          <button class="btn btn-secondary btn-block" type="button" id="restore-btn">
+            <svg><use href="#i-upload"/></svg>
+            <span>Restore from backup</span>
+          </button>
+
+          <p class="auth-foot">Save a backup right after creation. A forgotten passphrase cannot be recovered.</p>
+        </div>
+      </div>
+
+      <footer class="statusbar">
+        <span><svg><use href="#i-lock"/></svg> Everything stays on this computer</span>
+        <span>v<span id="setup-version">0.1.0</span> · <button class="update-link" type="button" data-update>Update</button></span>
+      </footer>
+    </section>
+
+    <!-- ============ UNLOCK ============ -->
+    <section id="screen-unlock" class="screen auth-screen" data-screen="unlock" hidden>
+      <div class="auth-content">
+        <div class="auth-card auth-card-small">
+          <div class="identity-chip">
+            <span class="identity-chip-icon"><svg><use href="#i-key"/></svg></span>
+            <div class="identity-chip-text">
+              <span class="identity-chip-label">Local identity</span>
+              <span class="identity-chip-name" id="locked-name">My identity</span>
+              <span class="identity-chip-id" id="locked-id">DSX-••••-••••-••••-••••</span>
+            </div>
+            <span class="badge"><svg><use href="#i-lock"/></svg>Locked</span>
+          </div>
+
+          <h1>Unlock identity</h1>
+          <p class="auth-sub">Enter the passphrase that protects your key.</p>
+
+          <div id="unlock-notice" class="info-bar info-warn" hidden>
+            <svg><use href="#i-warning"/></svg>
+            <span id="unlock-notice-text"></span>
+          </div>
+
+          <form id="unlock-form" novalidate>
+            <div class="field">
+              <label for="unlock-pass">Passphrase</label>
+              <div class="input-wrap">
+                <input id="unlock-pass" type="password" placeholder="enter passphrase" autocomplete="current-password" required autofocus>
+                <button type="button" class="reveal" data-reveal="unlock-pass" aria-label="Show passphrase">
+                  <svg class="eye-on"><use href="#i-eye"/></svg><svg class="eye-off"><use href="#i-eye-off"/></svg>
+                </button>
+              </div>
+            </div>
+            <p id="unlock-error" class="form-error" role="alert"></p>
+            <button class="btn btn-primary btn-block" type="submit" id="unlock-submit">
+              <svg><use href="#i-unlock"/></svg>
+              <span>Unlock</span>
+            </button>
+          </form>
+
+          <p class="auth-foot">The passphrase is never stored. Without it, the key cannot be recovered.</p>
+        </div>
+      </div>
+
+      <footer class="statusbar">
+        <span><svg><use href="#i-lock"/></svg> Everything stays on this computer</span>
+        <span>v<span id="unlock-version">0.1.0</span> · <button class="update-link" type="button" data-update>Update</button></span>
+      </footer>
+    </section>
+
+    <!-- ============ MAIN APP ============ -->
+    <section id="screen-main" class="screen main-screen" data-screen="main" hidden>
+      <div class="main-shell">
+        <aside class="sidebar">
+          <nav class="nav" aria-label="Main navigation">
+            <button class="nav-item is-active" type="button" data-page="overview">
+              <svg><use href="#i-home"/></svg>
+              <span>Overview</span>
+            </button>
+            <button class="nav-item" type="button" data-page="profile">
+              <svg><use href="#i-user"/></svg>
+              <span>Profile</span>
+            </button>
+            <button class="nav-item" type="button" data-page="accounts">
+              <svg><use href="#i-list"/></svg>
+              <span>Approved accounts</span>
+            </button>
+            <button class="nav-item" type="button" data-page="settings">
+              <svg><use href="#i-gear"/></svg>
+              <span>Settings</span>
+            </button>
+          </nav>
+
+          <div class="sidebar-foot">
+            <div class="lock-state">
+              <span class="status-dot" aria-hidden="true"></span>
+              <div>
+                <strong>Unlocked</strong>
+                <span id="sidebar-label">My identity</span>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-block" type="button" id="lock-btn">
+              <svg><use href="#i-lock"/></svg>
+              <span>Lock</span>
+            </button>
+          </div>
+        </aside>
+
+        <main class="content">
+          <header class="content-head">
+            <div>
+              <h1 id="page-title">Overview</h1>
+              <p id="page-subtitle">Your identity and sign-in status.</p>
+            </div>
+          </header>
+
+          <div class="content-scroll" id="content-scroll">
+            <section class="page" id="page-overview">
+              <div class="overview-grid">
+                <article class="card identity-card">
+                  <div class="card-head">
+                    <div class="section-title">
+                      <span class="icon-tile"><svg><use href="#i-key"/></svg></span>
+                      <div>
+                        <h2>My identity</h2>
+                        <p>Unlocked local key</p>
+                      </div>
+                    </div>
+                    <span class="badge">Ed25519</span>
+                  </div>
+
+                  <p class="identity-name" id="identity-label">My identity</p>
+
+                  <div class="fingerprint-row">
+                    <div>
+                      <span class="meta-label">Identity fingerprint</span>
+                      <code class="fingerprint" id="identity-id">DSX-••••-••••-••••-••••</code>
+                    </div>
+                    <button class="icon-btn" type="button" id="copy-id-btn" title="Copy fingerprint" aria-label="Copy fingerprint">
+                      <svg><use href="#i-copy"/></svg>
+                    </button>
+                  </div>
+
+                  <dl class="details">
+                    <div>
+                      <dt>Created</dt>
+                      <dd id="identity-created">—</dd>
+                    </div>
+                    <div>
+                      <dt>Protection</dt>
+                      <dd>Argon2id · AES-256-GCM</dd>
+                    </div>
+                    <div class="details-wide">
+                      <dt>Public key</dt>
+                      <dd><code id="identity-pubkey">ed25519:…</code></dd>
+                    </div>
+                  </dl>
+
+                  <div class="card-actions">
+                    <button class="btn btn-primary" type="button" id="copy-key-btn">
+                      <svg><use href="#i-copy"/></svg>
+                      <span>Copy public key</span>
+                    </button>
+                    <button class="btn btn-secondary" type="button" id="backup-btn">
+                      <svg><use href="#i-download"/></svg>
+                      <span>Back up</span>
+                    </button>
+                  </div>
+                </article>
+
+                <article class="card summary-card">
+                  <div class="card-head">
+                    <div class="section-title">
+                      <span class="icon-tile"><svg><use href="#i-shield"/></svg></span>
+                      <div>
+                        <h2>Your key</h2>
+                        <p>Local by design</p>
+                      </div>
+                    </div>
+                    <span class="badge">Private</span>
+                  </div>
+
+                  <p class="summary-title">Only you can use it</p>
+                  <p class="summary-text">The private key never leaves this computer. Websites can ask DsxID to sign a challenge through the JavaScript SDK.</p>
+                  <div class="summary-details">
+                    <div class="summary-row"><span class="k">Protection</span><span class="v">Argon2id</span></div>
+                    <div class="summary-row"><span class="k">Signing</span><span class="v">Ed25519</span></div>
+                    <div class="summary-row"><span class="k">Backups</span><span class="v">Encrypted</span></div>
+                  </div>
+                </article>
+              </div>
+
+              <article class="card guide-card">
+                <h2>How sign-in works</h2>
+                <div class="guide-steps">
+                  <div class="guide-step">
+                    <span class="step-dot">1</span>
+                    <div><strong>Service sends a challenge</strong><p>A one-time code with a short lifetime.</p></div>
+                  </div>
+                  <div class="guide-step">
+                    <span class="step-dot">2</span>
+                    <div><strong>Your key signs it</strong><p>The private key never leaves this computer.</p></div>
+                  </div>
+                  <div class="guide-step">
+                    <span class="step-dot">3</span>
+                    <div><strong>Service verifies the signature</strong><p>No password is sent or stored.</p></div>
+                  </div>
+                </div>
+              </article>
+            </section>
+
+
+            <section class="page" id="page-profile" hidden>
+              <section class="card profile-card">
+                <div class="card-head">
+                  <div class="section-title">
+                    <span class="icon-tile"><svg><use href="#i-user"/></svg></span>
+                    <div>
+                      <h2>E-shop profile</h2>
+                      <p>Shared only after you approve a website request</p>
+                    </div>
+                  </div>
+                  <span class="badge"><svg><use href="#i-lock"/></svg>Encrypted locally</span>
+                </div>
+                <p class="profile-lede">Fill in the details you want DsxID to offer at checkout. Websites receive only the fields you approve.</p>
+                <form id="profile-form" class="profile-form" novalidate>
+                  <div class="profile-grid">
+                    <div class="field">
+                      <label for="profile-fullName">Full name</label>
+                      <input id="profile-fullName" data-profile-field="fullName" type="text" maxlength="120" autocomplete="name" placeholder="for example Alex Example">
+                    </div>
+                    <div class="field">
+                      <label for="profile-email">Email</label>
+                      <input id="profile-email" data-profile-field="email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com">
+                    </div>
+                    <div class="field">
+                      <label for="profile-phone">Phone</label>
+                      <input id="profile-phone" data-profile-field="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="+421 ...">
+                    </div>
+                    <div class="field">
+                      <label for="profile-company">Company <span class="optional">optional</span></label>
+                      <input id="profile-company" data-profile-field="company" type="text" maxlength="120" autocomplete="organization" placeholder="company name">
+                    </div>
+                    <div class="field field-wide">
+                      <label for="profile-address1">Address line 1</label>
+                      <input id="profile-address1" data-profile-field="address1" type="text" maxlength="160" autocomplete="address-line1" placeholder="street and number">
+                    </div>
+                    <div class="field field-wide">
+                      <label for="profile-address2">Address line 2 <span class="optional">optional</span></label>
+                      <input id="profile-address2" data-profile-field="address2" type="text" maxlength="160" autocomplete="address-line2" placeholder="apartment, floor, …">
+                    </div>
+                    <div class="field">
+                      <label for="profile-city">City</label>
+                      <input id="profile-city" data-profile-field="city" type="text" maxlength="80" autocomplete="address-level2" placeholder="city">
+                    </div>
+                    <div class="field">
+                      <label for="profile-postalCode">Postal code</label>
+                      <input id="profile-postalCode" data-profile-field="postalCode" type="text" maxlength="24" autocomplete="postal-code" placeholder="postal code">
+                    </div>
+                    <div class="field">
+                      <label for="profile-country">Country</label>
+                      <input id="profile-country" data-profile-field="country" type="text" maxlength="80" autocomplete="country-name" placeholder="country">
+                    </div>
+                    <div class="field">
+                      <label for="profile-vatId">VAT ID <span class="optional">optional</span></label>
+                      <input id="profile-vatId" data-profile-field="vatId" type="text" maxlength="40" autocomplete="off" placeholder="VAT ID">
+                    </div>
+                  </div>
+                  <div class="profile-actions">
+                    <button class="btn btn-primary" type="submit" id="profile-save">
+                      <svg><use href="#i-check"/></svg>
+                      <span>Save profile</span>
+                    </button>
+                    <p class="form-message form-error" id="profile-error" role="alert"></p>
+                    <p class="form-message form-success" id="profile-success" role="status"></p>
+                  </div>
+                </form>
+              </section>
+            </section>
+
+            <section class="page" id="page-accounts" hidden>
+              <section class="card accounts-card">
+                <div class="accounts-toolbar">
+                  <div class="section-title">
+                    <span class="icon-tile"><svg><use href="#i-list"/></svg></span>
+                    <div>
+                      <h2>Approved websites</h2>
+                      <p>Sign-ins approved by this identity</p>
+                    </div>
+                  </div>
+                  <span class="badge" id="accounts-count">0 approved</span>
+                </div>
+                <div id="accounts-list" class="accounts-list"></div>
+                <p class="accounts-note">Status reflects approvals on this computer. Each website manages its own session.</p>
+              </section>
+            </section>
+
+            <section class="page" id="page-settings" hidden>
+              <div class="settings-stack">
+                <section class="card settings-card settings-card-wide">
+                  <h2>Change passphrase</h2>
+                  <p>The key stays the same; only the way you unlock it changes.</p>
+                  <form id="settings-change-form" class="settings-form" novalidate>
+                    <div class="field">
+                      <label for="settings-current-pass">Current passphrase</label>
+                      <input id="settings-current-pass" type="password" placeholder="current passphrase" autocomplete="current-password">
+                    </div>
+                    <div class="field">
+                      <label for="settings-new-pass">New passphrase</label>
+                      <input id="settings-new-pass" type="password" placeholder="at least 8 characters" autocomplete="new-password">
+                    </div>
+                    <div class="field">
+                      <label for="settings-new-pass2">Confirm</label>
+                      <input id="settings-new-pass2" type="password" placeholder="repeat the new passphrase" autocomplete="new-password">
+                    </div>
+                    <div class="form-action">
+                      <button class="btn btn-primary" type="submit">Change passphrase</button>
+                    </div>
+                  </form>
+                  <p class="form-message form-error" id="settings-change-error" role="alert"></p>
+                  <p class="form-message form-success" id="settings-change-success" role="status"></p>
+                </section>
+
+                <section class="card settings-card">
+                  <h2>Identity backup</h2>
+                  <p>Save an encrypted copy of your key. You will also need the passphrase to restore it.</p>
+                  <button class="btn btn-secondary" type="button" id="settings-backup-btn">
+                    <svg><use href="#i-download"/></svg>
+                    <span>Save backup</span>
+                  </button>
+                </section>
+
+                <section class="card settings-card">
+                  <h2>Application data</h2>
+                  <p>All data is stored locally. The application uses no cloud or telemetry.</p>
+                  <div class="settings-data">
+                    <span class="meta-label">Data folder</span>
+                    <code id="settings-data-path">—</code>
+                  </div>
+                </section>
+
+                <section class="card settings-card danger-card settings-card-wide">
+                  <h2>Delete identity</h2>
+                  <p>The key will be permanently removed from this computer. Without a backup, it cannot be recovered.</p>
+                  <form id="settings-delete-form" novalidate>
+                    <div class="field field-inline">
+                      <label for="settings-delete-pass">Confirm with passphrase</label>
+                      <input id="settings-delete-pass" type="password" placeholder="enter passphrase" autocomplete="current-password">
+                    </div>
+                    <label class="checkbox">
+                      <input id="settings-delete-confirm" type="checkbox">
+                      <span>I understand that the identity cannot be recovered without a backup.</span>
+                    </label>
+                    <button class="btn btn-danger" type="submit" id="settings-delete-btn">
+                      <svg><use href="#i-trash"/></svg>
+                      <span>Delete identity</span>
+                    </button>
+                  </form>
+                  <p class="form-message form-error" id="settings-delete-error" role="alert"></p>
+                </section>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+      <footer class="statusbar">
+        <span><svg><use href="#i-lock"/></svg> Everything stays on this computer</span>
+        <span>v<span id="main-version">0.1.0</span> · <button class="update-link" type="button" data-update>Update</button></span>
+      </footer>
+    </section>
+  </main>
+
+  <div id="approval-root" class="approval-root" hidden>
+    <div class="approval-backdrop">
+      <div class="approval-dialog" role="dialog" aria-modal="true" aria-labelledby="approval-title">
+        <div class="approval-head">
+          <span class="approval-icon"><svg><use href="#i-shield"/></svg></span>
+          <div>
+            <h2 id="approval-title">Approve sign-in?</h2>
+            <p>A website wants to sign in with your DsxID identity.</p>
+          </div>
+        </div>
+        <dl class="approval-meta">
+          <div><dt>Website</dt><dd id="approval-origin">—</dd></div>
+          <div><dt>Challenge</dt><dd><code id="approval-challenge">—</code></dd></div>
+        </dl>
+        <div id="approval-profile" class="approval-profile" hidden>
+          <div class="approval-profile-head">
+            <span>Profile details requested</span>
+            <span class="badge" id="approval-profile-count">0 fields</span>
+          </div>
+          <dl id="approval-profile-list" class="approval-profile-list"></dl>
+        </div>
+        <p class="approval-note">Approve only if you started this sign-in.</p>
+        <div class="approval-actions">
+          <button class="btn btn-secondary" type="button" id="approval-deny">Deny</button>
+          <button class="btn btn-primary" type="button" id="approval-approve">Approve</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="update-root" class="approval-root" hidden>
+    <div class="approval-backdrop">
+      <div class="approval-dialog" role="dialog" aria-modal="true" aria-labelledby="update-title">
+        <div class="approval-head">
+          <span class="approval-icon"><svg><use href="#i-download"/></svg></span>
+          <div>
+            <h2 id="update-title">Updates</h2>
+            <p>Check which version of DsxID you are using.</p>
+          </div>
+        </div>
+        <dl class="approval-meta">
+          <div><dt>Current version</dt><dd><code id="update-current">0.1.0</code></dd></div>
+          <div><dt>Automatic updates</dt><dd>Not configured</dd></div>
+        </dl>
+        <p class="approval-note">The update page is not available yet. This build does not include automatic updates; when a new version is released, replace the current DsxID.exe with the new file.</p>
+        <div class="approval-actions">
+          <button class="btn btn-primary" type="button" id="update-close">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite" aria-atomic="false"></div>
+
+  <div id="splash" class="splash" role="status" aria-label="Loading DsxID">
+    <div class="splash-inner">
+      <div class="splash-mark" aria-hidden="true">
+        <span class="splash-ring splash-ring-outer"></span>
+        <span class="splash-ring splash-ring-inner"></span>
+        <span class="splash-core"><svg><use href="#i-key"/></svg></span>
+      </div>
+      <div class="splash-word">DsxID</div>
+      <div class="splash-sub">Local identity, private by design</div>
+      <div class="splash-progress" aria-hidden="true"><span></span></div>
+    </div>
+  </div>
+
+  <div id="fatal" class="fatal" hidden>
+    <div class="fatal-card">
+      <svg class="fatal-icon"><use href="#i-warning"/></svg>
+      <h2>DsxID could not start</h2>
+      <p>This is the DsxID desktop application. Run <code>DsxID.exe</code>.</p>
+      <p class="fatal-hint" id="fatal-detail"></p>
+    </div>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
