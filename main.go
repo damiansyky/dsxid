@@ -9,6 +9,7 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 
 	"dsxid/internal/app"
@@ -16,6 +17,12 @@ import (
 
 //go:embed all:frontend/dist
 var assets embed.FS
+
+// The Linux window icon is loaded from the PNG at runtime. Windows uses the icon
+// embedded by rsrc_windows_amd64.syso instead.
+//
+//go:embed build/appicon.png
+var appIcon []byte
 
 func main() {
 	application, err := app.NewApp()
@@ -37,7 +44,7 @@ func main() {
 		Width:             1120,
 		Height:            760,
 		DisableResize:     true,
-		HideWindowOnClose: true,
+		HideWindowOnClose: hideWindowOnClose,
 		SingleInstanceLock: &options.SingleInstanceLock{
 			UniqueId: "DsxID-local-identity",
 			OnSecondInstanceLaunch: func(options.SecondInstanceData) {
@@ -71,6 +78,12 @@ func main() {
 				LightModeBorder:            windows.RGB(224, 224, 224),
 				LightModeBorderInactive:    windows.RGB(236, 236, 236),
 			},
+		},
+		Linux: &linux.Options{
+			Icon:        appIcon,
+			ProgramName: "DsxID",
+			// Software rendering avoids driver-specific problems on Linux.
+			WebviewGpuPolicy: linux.WebviewGpuPolicyNever,
 		},
 	})
 	if err != nil {

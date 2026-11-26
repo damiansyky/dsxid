@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=DsxID
+GenericName=Local identity
+Comment=Local-first identity for your computer
+Exec=DsxID
+TryExec=DsxID
+Icon=dsxid
+Terminal=false
+Categories=Utility;Security;
+Keywords=identity;sign-in;passwordless;ed25519;privacy;
+StartupNotify=true
+StartupWMClass=DsxID

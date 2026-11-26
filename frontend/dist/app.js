@@ -19,9 +19,23 @@ let approvalBusy = false;
 let approvalTimer = null;
 const seenMessages = new Set();
 
-// Set this to the public download/update page when it is available.
-// While empty, the Update link opens a local information dialog.
-const UPDATE_URL = "";
+// Public links opened from the footer. The update check can replace
+// updatePageURL with the exact release page returned by GitHub.
+const UPDATE_URL = "https://github.com/damiansyky/dsxid/releases/";
+const DONATE_URL = "https://github.com/sponsors/damiansyky";
+const TOUR_SEEN_KEY = "dsxid.tourSeen.v1";
+let updatePageURL = UPDATE_URL;
+let updateChecked = false;
+
+// Tour state lives here because the tour moves between the setup form and the
+// main window.
+let tourActive = false;
+let tourIndex = 0;
+let tourStartPage = "overview";
+let tourAutoChecked = false;
+let tourRenderToken = 0;
+let tourSteps = [];
+let tourMode = "main";
 
 const dateFmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" });
 const timeFmt = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit" });
@@ -45,6 +59,96 @@ const PAGE_META = {
   },
 };
 
+// Setup tour is optional; the main tour is offered once after the first unlock.
+const SETUP_TOUR_STEPS = [
+  {
+    center: true,
+    title: "Let's create your identity",
+    body: "This quick tour points to each field on this screen. Your private key stays on this computer.",
+  },
+  {
+    target: "#create-name",
+    placement: "right",
+    title: "Name your identity",
+    body: "Optional. It is only a label inside DsxID; websites do not receive it unless you approve a profile field.",
+  },
+  {
+    target: "#create-pass",
+    placement: "right",
+    title: "Choose a passphrase",
+    body: "At least 8 characters; longer is better. It protects the key and cannot be reset. Save a backup after creation.",
+  },
+  {
+    target: "#create-pass2",
+    placement: "right",
+    title: "Confirm the passphrase",
+    body: "Type the same passphrase again. DsxID never stores it in plaintext.",
+  },
+  {
+    target: ".checkbox",
+    placement: "right",
+    title: "Acknowledge recovery",
+    body: "Check the box to confirm you understand that a forgotten passphrase cannot be recovered without a backup.",
+  },
+  {
+    target: "#create-submit",
+    placement: "top",
+    title: "Create and continue",
+    body: "Click Create identity when the fields match. You can reopen a tour later from Tutorial in the sidebar.",
+  },
+];
+
+const TOUR_STEPS = [
+  // All main-tour targets live on the Overview screen, so the tour never has to
+  // switch pages while the overlay is open.
+  {
+    center: true,
+    title: "Welcome to DsxID",
+    body: "A quick tour of where everything lives. It takes less than a minute, and you can reopen it from Tutorial in the sidebar.",
+  },
+  {
+    target: ".sidebar .nav",
+    placement: "right",
+    title: "Your four pages",
+    body: "Overview shows your identity. Profile stores checkout details. Approved accounts lists websites that received a signature. Settings holds backups and passphrase changes. Tutorial reopens this tour.",
+  },
+  {
+    target: ".identity-card",
+    placement: "right",
+    title: "This is your identity",
+    body: "The fingerprint identifies your key. The private key never leaves this computer, even when a website asks for a signature.",
+  },
+  {
+    target: "#copy-key-btn",
+    placement: "right",
+    title: "Share your public key",
+    body: "Use Copy public key when a service needs to recognize you. The public key cannot sign anything or unlock your identity.",
+  },
+  {
+    target: "#backup-btn",
+    placement: "right",
+    title: "Save a backup now",
+    body: "Back up creates an encrypted copy. Restoring it later still requires your passphrase; without a backup, a lost identity cannot be recovered.",
+  },
+  {
+    target: ".statusbar-actions",
+    placement: "top",
+    title: "Updates and support",
+    body: "Update opens GitHub Releases. Donate offers optional monthly support. Both links open in your browser.",
+  },
+  {
+    target: "#lock-btn",
+    placement: "right",
+    title: "Lock when you are done",
+    body: "Lock removes the unlocked key from memory. On Windows, closing the window keeps DsxID available in the notification area.",
+  },
+  {
+    center: true,
+    title: "You're ready",
+    body: "Save a backup, fill your Profile only with what you want to share, and approve only sign-ins you started. Reopen this tour from Tutorial anytime.",
+  },
+];
+
 boot();
 
 async function boot() {
@@ -60,6 +164,8 @@ async function boot() {
     applyState(initial);
     window.runtime?.EventsOn?.("dsxid:state", refreshState);
     startApprovalPolling();
+    // Let the window settle first; the check must never race the splash.
+    setTimeout(checkForUpdates, 1200);
     const preview = new URLSearchParams(location.search).get("preview");
     if (initial.unlocked && ["profile", "settings", "accounts"].includes(preview)) {
       showPage(preview);
@@ -102,12 +208,33 @@ function bindStaticHandlers() {
   $("#approval-approve").addEventListener("click", () => resolveApproval(true));
   $("#approval-deny").addEventListener("click", () => resolveApproval(false));
   $$("[data-update]").forEach((btn) => btn.addEventListener("click", openUpdate));
-  $("#update-close").addEventListener("click", closeUpdate);
-  $("#update-root").addEventListener("click", (event) => {
-    if (event.target.classList.contains("approval-backdrop")) closeUpdate();
+  $$("[data-donate]").forEach((btn) => btn.addEventListener("click", openDonate));
+  $("#donate-close").addEventListener("click", closeDonate);
+  $("#donate-sponsor").addEventListener("click", openSponsors);
+  $("#donate-root").addEventListener("click", (event) => {
+    if (event.target.classList.contains("approval-backdrop")) closeDonate();
   });
 
-  $$(".nav-item").forEach((btn) => {
+  $$("[data-tour]").forEach((btn) => btn.addEventListener("click", () => startTour()));
+  $$("[data-tour-setup]").forEach((btn) => btn.addEventListener("click", () => {
+    startTour({ steps: SETUP_TOUR_STEPS, mode: "setup" });
+  }));
+  $("#tour-skip").addEventListener("click", () => endTour());
+  $("#tour-back").addEventListener("click", () => {
+    if (tourIndex > 0) showTourStep(tourIndex - 1);
+  });
+  $("#tour-next").addEventListener("click", () => {
+    if (tourIndex >= tourSteps.length - 1) {
+      endTour({ completed: true });
+    } else {
+      showTourStep(tourIndex + 1);
+    }
+  });
+  window.addEventListener("resize", () => {
+    if (tourActive) showTourStep(tourIndex);
+  });
+
+  $$(".nav-item[data-page]").forEach((btn) => {
     btn.addEventListener("click", () => {
       showPage(btn.dataset.page);
       if (btn.dataset.page === "profile") loadProfile();
@@ -159,11 +286,15 @@ function bindStaticHandlers() {
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
-    if (!$("#update-root").hidden) {
-      closeUpdate();
+    if (!$("#donate-root").hidden) {
+      closeDonate();
       return;
     }
-    if (activeApproval && !approvalBusy) resolveApproval(false);
+    if (activeApproval && !approvalBusy) {
+      resolveApproval(false);
+      return;
+    }
+    if (tourActive) endTour();
   });
   window.addEventListener("error", (event) => console.error(event.error || event.message));
 }
@@ -177,6 +308,8 @@ function applyState(next) {
   const wasMain = currentScreen === "main";
   state = next;
   if (!state.unlocked) clearProfileForm();
+  if (!state.unlocked && !$("#donate-root").hidden) closeDonate(false);
+  if (!state.unlocked && tourActive) endTour({ restore: false, remember: false });
 
   const version = state.version || "0.1.0";
   for (const id of ["setup-version", "unlock-version", "main-version"]) {
@@ -206,6 +339,8 @@ function applyState(next) {
     seenMessages.add(state.notice);
     setTimeout(() => toast(state.notice, "error"), 600);
   }
+  // The first unlock is the natural place to offer the main tour.
+  if (state.unlocked) maybeStartTour();
   hideSplash();
 }
 
@@ -628,26 +763,315 @@ function hideApproval() {
   $("#approval-profile-count").textContent = "0 fields";
 }
 
-function openUpdate() {
-  if (UPDATE_URL) {
-    if (!/^https:\/\//i.test(UPDATE_URL)) {
-      toast("The update URL must use HTTPS.", "error");
-      return;
-    }
-    if (window.runtime?.BrowserOpenURL) {
-      window.runtime.BrowserOpenURL(UPDATE_URL);
-    } else {
-      window.open(UPDATE_URL, "_blank", "noopener");
-    }
+// Keep external navigation in one place: HTTPS only, system browser when Wails
+// provides it, and window.open as a fallback for the plain browser preview.
+function openExternal(url) {
+  if (!/^https:\/\//i.test(url)) {
+    toast("The link must use HTTPS.", "error");
     return;
   }
-  $("#update-current").textContent = state?.version || "0.1.0";
-  $("#update-root").hidden = false;
-  $("#update-close").focus();
+  try {
+    if (window.runtime?.BrowserOpenURL) {
+      window.runtime.BrowserOpenURL(url);
+      return;
+    }
+    window.open(url, "_blank", "noopener");
+  } catch (error) {
+    toast("Could not open the link.", "error");
+  }
 }
 
-function closeUpdate() {
-  $("#update-root").hidden = true;
+function openUpdate() {
+  openExternal(updatePageURL);
+}
+
+// Runs once after startup. Failures are ignored so an offline app still starts
+// normally.
+async function checkForUpdates() {
+  if (updateChecked || !api?.CheckForUpdates) return;
+  updateChecked = true;
+  try {
+    const info = await api.CheckForUpdates();
+    if (!info?.available) return;
+    if (typeof info.url === "string" && /^https:\/\/github\.com\/damiansyky\/dsxid\/releases\//i.test(info.url)) {
+      updatePageURL = info.url;
+    }
+    const latest = String(info.latest || "").trim();
+    const message = latest ? `DsxID ${latest} is available.` : "A new DsxID version is available.";
+    for (const btn of $$("[data-update]")) {
+      btn.textContent = "Update available";
+      btn.classList.add("has-update");
+      btn.setAttribute("aria-label", `${message} Open GitHub Releases.`);
+    }
+    toast(message, "info", "Update available");
+  } catch (error) {
+    // Offline or rate-limited startup checks stay silent.
+  }
+}
+
+// Payment never happens inside DsxID. This dialog only explains the option and
+// hands the actual donation over to GitHub Sponsors.
+function openDonate() {
+  $("#donate-root").hidden = false;
+  $$("[data-donate]").forEach((btn) => btn.classList.add("is-paused"));
+  $("#donate-sponsor").focus();
+}
+
+function closeDonate(returnFocus = true) {
+  const root = $("#donate-root");
+  if (root.hidden) return;
+  root.hidden = true;
+  $$("[data-donate]").forEach((btn) => btn.classList.remove("is-paused"));
+  if (returnFocus) $("[data-donate]")?.focus();
+}
+
+function openSponsors() {
+  openExternal(DONATE_URL);
+  closeDonate(false);
+}
+
+/* ------------------------------------------------------------------ */
+/* Tutorial                                                            */
+/* ------------------------------------------------------------------ */
+
+function tourWasSeen() {
+  try {
+    return localStorage.getItem(TOUR_SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markTourSeen() {
+  try {
+    localStorage.setItem(TOUR_SEEN_KEY, "1");
+  } catch {
+    // Storage is best-effort; the Tutorial button always reopens the tour.
+  }
+}
+
+// Auto-start only once per install and only while the main screen is visible.
+// If storage is unavailable, Tutorial still opens the tour manually.
+function maybeStartTour() {
+  if (tourAutoChecked || !state?.unlocked || currentScreen !== "main") return;
+  tourAutoChecked = true;
+  if (tourWasSeen()) return;
+  if (new URLSearchParams(location.search).has("preview")) return;
+
+  // Wait for the splash to finish before covering the window with the tour.
+  window.setTimeout(() => {
+    if (tourActive || tourWasSeen()) return;
+    if (!state?.unlocked || currentScreen !== "main") return;
+    startTour();
+  }, 1100);
+}
+
+// Setup and main tours share the same overlay. The mode decides which screen is
+// valid and whether closing the tour should remember it as seen.
+async function startTour({ steps = TOUR_STEPS, mode = "main" } = {}) {
+  if (tourActive) return;
+  if (mode === "main") {
+    if (!state?.hasIdentity || !state?.unlocked || currentScreen !== "main") return;
+  } else if (currentScreen !== "setup") {
+    return;
+  }
+  if (activeApproval) return;
+  if (!$("#donate-root").hidden) closeDonate(false);
+
+  tourSteps = steps;
+  tourMode = mode;
+  tourActive = true;
+  if (mode === "main") tourAutoChecked = true;
+  tourStartPage = currentPage;
+  tourIndex = 0;
+  tourRenderToken++;
+  $("#tour-root").hidden = false;
+  document.body.classList.add("tour-open");
+
+  if (mode === "main" && currentPage !== "overview") {
+    showPage("overview");
+    await sleep(140);
+  }
+  if (mode === "main") {
+    $("#content-scroll")?.scrollTo({ top: 0, behavior: "auto" });
+  }
+  await showTourStep(0);
+}
+
+// Hide the tooltip while the page scrolls and the target is measured. The token
+// cancels an in-flight step if somebody clicks Next twice quickly.
+async function showTourStep(index) {
+  if (!tourActive) return;
+  if (index < 0) index = 0;
+  if (index >= tourSteps.length) {
+    endTour({ completed: true });
+    return;
+  }
+
+  const token = ++tourRenderToken;
+  const step = tourSteps[index];
+  const card = $("#tour-card");
+  const spotlight = $("#tour-spotlight");
+  const scrim = $("#tour-scrim");
+
+  tourIndex = index;
+  card.classList.toggle("is-centered", !!step.center);
+  card.style.left = "";
+  card.style.top = "";
+  card.style.visibility = "hidden";
+  scrim.hidden = false;
+  $("#tour-step").textContent = `Step ${index + 1} of ${tourSteps.length}`;
+  $("#tour-title").textContent = step.title;
+  $("#tour-body").textContent = step.body;
+  $("#tour-back").hidden = index === 0;
+  $("#tour-next").textContent = index === tourSteps.length - 1
+    ? (tourMode === "setup" ? "Start" : "Finish")
+    : "Next";
+  $("#tour-progress-fill").style.width = `${Math.round(((index + 1) / tourSteps.length) * 100)}%`;
+
+  if (step.center) {
+    spotlight.hidden = true;
+    scrim.hidden = false;
+    card.style.visibility = "";
+    $("#tour-next").focus({ preventScroll: true });
+    return;
+  }
+
+  spotlight.hidden = true;
+  const target = document.querySelector(step.target);
+  if (!target) {
+    await showTourStep(index + 1);
+    return;
+  }
+
+  target.scrollIntoView({ block: "center", inline: "nearest", behavior: "auto" });
+  await sleep(120);
+  if (token !== tourRenderToken || !tourActive) return;
+
+  const rect = target.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) {
+    await showTourStep(index + 1);
+    return;
+  }
+
+  spotlight.hidden = false;
+  spotlight.style.left = `${Math.max(6, rect.left - 6)}px`;
+  spotlight.style.top = `${Math.max(6, rect.top - 6)}px`;
+  spotlight.style.width = `${rect.width + 12}px`;
+  spotlight.style.height = `${rect.height + 12}px`;
+  positionTourCard(rect, step.placement);
+  scrim.hidden = true;
+  card.style.visibility = "";
+  $("#tour-next").focus({ preventScroll: true });
+}
+
+// Try the preferred side, then the others. Clamp the free axis so the card fits
+// inside the fixed 1120x760 window.
+function positionTourCard(rect, preferred) {
+  const card = $("#tour-card");
+  const gap = 14;
+  const margin = 16;
+  const width = card.offsetWidth;
+  const height = card.offsetHeight;
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+
+  const placements = [];
+  if (preferred) placements.push(preferred);
+  for (const placement of ["right", "left", "bottom", "top"]) {
+    if (!placements.includes(placement)) placements.push(placement);
+  }
+
+  let position = null;
+  for (const placement of placements) {
+    let left;
+    let top;
+    if (placement === "right") {
+      left = rect.right + gap;
+      top = rect.top + rect.height / 2 - height / 2;
+    } else if (placement === "left") {
+      left = rect.left - gap - width;
+      top = rect.top + rect.height / 2 - height / 2;
+    } else if (placement === "bottom") {
+      left = rect.left + rect.width / 2 - width / 2;
+      top = rect.bottom + gap;
+    } else {
+      left = rect.left + rect.width / 2 - width / 2;
+      top = rect.top - gap - height;
+    }
+
+    if ((placement === "right" || placement === "left") &&
+      left >= margin && left + width <= viewportWidth - margin) {
+      position = {
+        left,
+        top: Math.min(Math.max(top, margin), viewportHeight - height - margin),
+      };
+      break;
+    }
+    if ((placement === "bottom" || placement === "top") &&
+      top >= margin && top + height <= viewportHeight - margin) {
+      position = {
+        left: Math.min(Math.max(left, margin), viewportWidth - width - margin),
+        top,
+      };
+      break;
+    }
+  }
+
+  if (!position) {
+    position = {
+      left: Math.min(
+        Math.max(rect.left + rect.width / 2 - width / 2, margin),
+        viewportWidth - width - margin,
+      ),
+      top: Math.min(
+        Math.max(rect.bottom + gap, margin),
+        viewportHeight - height - margin,
+      ),
+    };
+  }
+
+  card.style.left = `${Math.round(position.left)}px`;
+  card.style.top = `${Math.round(position.top)}px`;
+}
+
+// Only the main tour is remembered automatically. The setup tour is opt-in, so
+// finishing it must not hide the overview tour after the identity is created.
+function endTour({ completed = false, restore = true, remember = true } = {}) {
+  if (!tourActive) return;
+  const endedMode = tourMode;
+  tourActive = false;
+  tourRenderToken++;
+  $("#tour-root").hidden = true;
+  $("#tour-spotlight").hidden = true;
+  $("#tour-card").style.visibility = "";
+  document.body.classList.remove("tour-open");
+  if (remember && endedMode === "main") markTourSeen();
+
+  if (restore && endedMode === "main" && state?.unlocked) {
+    if (tourStartPage && tourStartPage !== currentPage) {
+      showPage(tourStartPage);
+      if (tourStartPage === "profile") loadProfile();
+    }
+    window.setTimeout(() => $("[data-tour]")?.focus({ preventScroll: true }), 0);
+  } else if (restore && endedMode === "setup") {
+    window.setTimeout(() => {
+      if (completed) {
+        $("#create-name")?.focus();
+      } else {
+        $("[data-tour-setup]")?.focus();
+      }
+    }, 0);
+  }
+
+  if (completed) {
+    toast(
+      endedMode === "setup"
+        ? "Fill in the fields and click Create identity."
+        : "Tour complete. Reopen it from Tutorial anytime.",
+      "success",
+    );
+  }
 }
 
 function shortChallenge(challenge) {
@@ -861,6 +1285,16 @@ function createMockApi() {
 
   return {
     GetState: async () => snapshot(),
+    CheckForUpdates: async () => {
+      const latest = params.get("update");
+      if (!latest) return { available: false, current: "0.1.0" };
+      return {
+        available: true,
+        current: "0.1.0",
+        latest,
+        url: "https://github.com/damiansyky/dsxid/releases/",
+      };
+    },
     GetProfile: async () => ({ ...profile }),
     SaveProfile: async (values) => {
       await sleep(160);

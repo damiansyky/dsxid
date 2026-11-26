@@ -27,9 +27,11 @@
     <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
     <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.3 1-1.3 1.9v.3"/><path d="M12 17h.01"/></symbol>
     <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></symbol>
     <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
     <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8Z"/></symbol>
   </svg>
 
   <main id="app" class="app">
@@ -49,6 +51,12 @@
             <svg><use href="#i-info"/></svg>
             <span>Your private key stays encrypted on this computer. Services receive only the public part.</span>
           </div>
+
+          <!-- Setup tour entry point; the main tour has its own Tutorial item. -->
+          <button class="tour-inline-link" type="button" data-tour-setup>
+            <svg><use href="#i-help"/></svg>
+            <span>Take a quick tour</span>
+          </button>
 
           <form id="create-form" novalidate>
             <div class="field">
@@ -98,12 +106,12 @@
             <span>Restore from backup</span>
           </button>
 
-          <p class="auth-foot">Save a backup right after creation. A forgotten passphrase cannot be recovered.</p>
+          <p class="auth-foot">Save a backup right after creation. A forgotten passphrase cannot be recovered. Take the quick tour above if you are unsure.</p>
         </div>
       </div>
 
       <footer class="statusbar">
-        <span><svg><use href="#i-lock"/></svg> Everything stays on this computer</span>
+        <span><svg><use href="#i-lock"/></svg> Your identity stays on this computer</span>
         <span>v<span id="setup-version">0.1.0</span> · <button class="update-link" type="button" data-update>Update</button></span>
       </footer>
     </section>
@@ -152,7 +160,7 @@
       </div>
 
       <footer class="statusbar">
-        <span><svg><use href="#i-lock"/></svg> Everything stays on this computer</span>
+        <span><svg><use href="#i-lock"/></svg> Your identity stays on this computer</span>
         <span>v<span id="unlock-version">0.1.0</span> · <button class="update-link" type="button" data-update>Update</button></span>
       </footer>
     </section>
@@ -177,6 +185,12 @@
             <button class="nav-item" type="button" data-page="settings">
               <svg><use href="#i-gear"/></svg>
               <span>Settings</span>
+            </button>
+            <div class="nav-separator" aria-hidden="true"></div>
+            <!-- Reopens the tour without changing the current page. -->
+            <button class="nav-item" type="button" data-tour>
+              <svg><use href="#i-help"/></svg>
+              <span>Tutorial</span>
             </button>
           </nav>
 
@@ -453,8 +467,15 @@
         </main>
       </div>
       <footer class="statusbar">
-        <span><svg><use href="#i-lock"/></svg> Everything stays on this computer</span>
-        <span>v<span id="main-version">0.1.0</span> · <button class="update-link" type="button" data-update>Update</button></span>
+        <span><svg><use href="#i-lock"/></svg> Your identity stays on this computer</span>
+        <span class="statusbar-actions">
+          <span>v<span id="main-version">0.1.0</span></span>
+          <button class="update-link" type="button" data-update>Update</button>
+          <button class="donate-link" type="button" data-donate title="Support DsxID on GitHub Sponsors">
+            <svg><use href="#i-heart"/></svg>
+            <span>Donate</span>
+          </button>
+        </span>
       </footer>
     </section>
   </main>
@@ -489,29 +510,57 @@
     </div>
   </div>
 
-  <div id="update-root" class="approval-root" hidden>
+  <!-- Payment is handled by GitHub Sponsors. -->
+  <div id="donate-root" class="approval-root" hidden>
     <div class="approval-backdrop">
-      <div class="approval-dialog" role="dialog" aria-modal="true" aria-labelledby="update-title">
+      <div class="approval-dialog" role="dialog" aria-modal="true" aria-labelledby="donate-title">
         <div class="approval-head">
-          <span class="approval-icon"><svg><use href="#i-download"/></svg></span>
+          <span class="approval-icon donate-icon"><svg><use href="#i-heart"/></svg></span>
           <div>
-            <h2 id="update-title">Updates</h2>
-            <p>Check which version of DsxID you are using.</p>
+            <h2 id="donate-title">Support DsxID</h2>
+            <p>Thank you for considering a contribution.</p>
           </div>
         </div>
-        <dl class="approval-meta">
-          <div><dt>Current version</dt><dd><code id="update-current">0.1.0</code></dd></div>
-          <div><dt>Automatic updates</dt><dd>Not configured</dd></div>
-        </dl>
-        <p class="approval-note">The update page is not available yet. This build does not include automatic updates; when a new version is released, replace the current DsxID.exe with the new file.</p>
+        <p class="donate-copy">DsxID is free to use and stays local-first. Your support funds ongoing development, security updates, and new features.</p>
+        <div class="donate-plan">
+          <div class="donate-plan-head">
+            <strong>Monthly donation</strong>
+            <span class="badge badge-info">Recommended</span>
+          </div>
+          <p>Monthly support is the most helpful. It keeps the project sustainable, and you can cancel anytime.</p>
+        </div>
+        <p class="approval-note">Payments are handled securely by GitHub Sponsors. DsxID never sees your payment details.</p>
         <div class="approval-actions">
-          <button class="btn btn-primary" type="button" id="update-close">Close</button>
+          <button class="btn btn-secondary" type="button" id="donate-close">Maybe later</button>
+          <button class="btn btn-primary" type="button" id="donate-sponsor">
+            <svg><use href="#i-heart"/></svg>
+            <span>Donate monthly</span>
+          </button>
         </div>
       </div>
     </div>
   </div>
 
   <div id="toasts" class="toasts" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- Guided tour overlay. The spotlight follows real UI elements; see app.js. -->
+  <div id="tour-root" class="tour-root" hidden>
+    <div id="tour-scrim" class="tour-scrim"></div>
+    <div id="tour-spotlight" class="tour-spotlight" hidden></div>
+    <div id="tour-card" class="tour-card" role="dialog" aria-modal="true" aria-labelledby="tour-title" aria-describedby="tour-body">
+      <div class="tour-progress">
+        <span id="tour-step">Step 1 of 8</span>
+        <button class="tour-skip" type="button" id="tour-skip">Skip tour</button>
+      </div>
+      <div class="tour-progress-bar" aria-hidden="true"><span id="tour-progress-fill"></span></div>
+      <h2 id="tour-title">Welcome to DsxID</h2>
+      <p id="tour-body"></p>
+      <div class="tour-actions">
+        <button class="btn btn-secondary" type="button" id="tour-back">Back</button>
+        <button class="btn btn-primary" type="button" id="tour-next">Next</button>
+      </div>
+    </div>
+  </div>
 
   <div id="splash" class="splash" role="status" aria-label="Loading DsxID">
     <div class="splash-inner">
@@ -530,7 +579,7 @@
     <div class="fatal-card">
       <svg class="fatal-icon"><use href="#i-warning"/></svg>
       <h2>DsxID could not start</h2>
-      <p>This is the DsxID desktop application. Run <code>DsxID.exe</code>.</p>
+      <p>This is the DsxID desktop application. Open it from your desktop or application menu.</p>
       <p class="fatal-hint" id="fatal-detail"></p>
     </div>
   </div>

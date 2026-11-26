@@ -1,4 +1,4 @@
-/* DsxID — light native Windows design */
+/* DsxID - light native desktop design */
 
 :root {
   --bg: #f3f3f3;
@@ -27,8 +27,8 @@
   --warning-border: #f1d98b;
   --focus: rgba(0, 103, 192, 0.42);
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.055);
-  --font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --mono: "Cascadia Mono", Consolas, "SFMono-Regular", monospace;
+  --font: "Segoe UI Variable Text", "Segoe UI", "Cantarell", "Ubuntu", "Noto Sans", system-ui, -apple-system, sans-serif;
+  --mono: "Cascadia Mono", Consolas, "DejaVu Sans Mono", "Ubuntu Mono", "Noto Sans Mono", monospace;
 }
 
 * { box-sizing: border-box; }
@@ -392,6 +392,27 @@ input[type="password"]::-ms-clear {
   line-height: 1.5;
   text-align: center;
 }
+.tour-inline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 9px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.tour-inline-link svg { width: 13px; height: 13px; }
+.tour-inline-link:hover { text-decoration: underline; text-underline-offset: 2px; }
+.tour-inline-link:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
 
 /* ---------- status bar ---------- */
 
@@ -420,10 +441,86 @@ input[type="password"]::-ms-clear {
   text-underline-offset: 2px;
 }
 .update-link:hover { color: var(--accent-hover); }
+.update-link.has-update { font-weight: 600; }
+.update-link.has-update::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: var(--success);
+  vertical-align: 1px;
+}
 .update-link:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
   border-radius: 2px;
+}
+.statusbar .statusbar-actions { gap: 8px; }
+/* Soft pulse; hover and keyboard focus pause it. */
+.donate-link {
+  height: 20px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--accent-border);
+  border-radius: 5px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  animation: donateBlink 1.9s ease-in-out infinite;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.donate-link svg { fill: currentColor; stroke: none; }
+.donate-link:hover,
+.donate-link:focus-visible {
+  animation: none;
+  background: #dcecfb;
+  border-color: var(--accent);
+  color: var(--accent-hover);
+}
+.donate-link.is-paused { animation: none; }
+.donate-link:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.donate-icon svg,
+#donate-sponsor svg { fill: currentColor; stroke: none; }
+.donate-copy {
+  margin: 16px 0 0;
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.donate-plan {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--accent-border);
+  border-radius: 7px;
+  background: var(--accent-soft);
+}
+.donate-plan-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.donate-plan-head strong {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+.donate-plan p {
+  margin: 5px 0 0;
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 1.5;
 }
 
 /* ---------- unlock identity chip ---------- */
@@ -570,6 +667,11 @@ input[type="password"]::-ms-clear {
 }
 .nav-item.is-active svg { color: var(--accent); }
 .nav-item:focus-visible { outline: 2px solid var(--focus); outline-offset: 0; }
+.nav-separator {
+  height: 1px;
+  margin: 4px 8px;
+  background: var(--border-soft);
+}
 
 .sidebar-foot {
   margin-top: auto;
@@ -1298,7 +1400,7 @@ input[type="password"]::-ms-clear {
 .toasts {
   position: fixed;
   right: 16px;
-  bottom: 16px;
+  bottom: 42px;
   z-index: 100;
   display: flex;
   flex-direction: column;
@@ -1472,6 +1574,123 @@ input[type="password"]::-ms-clear {
 }
 @keyframes toastIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes toastOut { to { opacity: 0; transform: translateY(4px); } }
+
+/* ---------- tutorial ---------- */
+
+.tour-root {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+}
+.tour-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.48);
+}
+/* The shadow dims everything outside the target; the spotlight is just a
+   positioned box around it. */
+.tour-spotlight {
+  position: absolute;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.48);
+  pointer-events: none;
+  transition: left 0.18s ease, top 0.18s ease, width 0.18s ease, height 0.18s ease;
+}
+.tour-card {
+  position: fixed;
+  z-index: 2;
+  width: min(300px, calc(100vw - 32px));
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+  animation: rise 0.16s ease-out both;
+}
+.tour-card.is-centered {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  animation: tourCenter 0.18s ease-out both;
+}
+.tour-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--text-3);
+  font-size: 10.5px;
+}
+.tour-skip {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-3);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.tour-skip:hover { color: var(--text); }
+.tour-skip:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.tour-progress-bar {
+  height: 3px;
+  margin: 9px 0 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border-soft);
+}
+.tour-progress-bar span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+.tour-card h2 {
+  margin: 14px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.tour-card p {
+  margin: 7px 0 0;
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.tour-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 17px;
+}
+.tour-actions .btn { min-width: 74px; }
+.tour-actions .btn[hidden] { display: none; }
+@keyframes tourCenter {
+  from { opacity: 0; transform: translate(-50%, -46%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+@keyframes donateBlink {
+  0%, 100% {
+    background: var(--accent-soft);
+    border-color: var(--accent-border);
+    color: var(--accent);
+    box-shadow: 0 0 0 0 rgba(0, 103, 192, 0);
+  }
+  50% {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(0, 103, 192, 0.12);
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
