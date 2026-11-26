@@ -1,4 +1,4 @@
-﻿# DsxID
+# DsxID
 
 > **Sign in as yourself.** A local identity for your computer.
 
@@ -18,21 +18,25 @@ No email. No password stored on a server. No cloud.
 - **Your own identity** — an Ed25519 key pair with a `DSX-XXXX-XXXX-XXXX-XXXX` fingerprint.
 - **Encrypted vault** — the private key is sealed with Argon2id + AES-256-GCM.
 - **Website sign-in** — a JavaScript SDK and local approval bridge for real website sessions.
-- **Windows notifications** - a toast appears when a website asks for approval, even if the window is in the background.
-- **Tray icon** - closing the window keeps DsxID running in the Windows notification area. The tray menu can open it, lock the identity, or quit.
+- **Desktop notifications** — a native notification appears when a website asks for approval, even if the window is in the background.
+- **Tray icon (Windows)** — closing the window keeps DsxID running in the Windows notification area. The tray menu can open it, lock the identity, or quit. On Linux the app closes normally.
 - **E-shop profile** - prefill contact and delivery details locally; approved websites receive only the fields you confirm.
 - **Approved accounts** - a local list of websites that received a signature from this identity.
 - **Backups** — an encrypted file that can be restored with the same passphrase.
 - **Lock** — a single click removes the unlocked key from memory.
+- **Guided tutorial** — a first-run tour points out the identity card, backup, update/donate, and lock controls; reopen it from **Tutorial** in the sidebar.
+- **Update check** — one quiet GitHub Releases check at startup; offline failures are ignored.
+- **Optional support** — a Donate dialog that leads to GitHub Sponsors. Payments never happen inside the app.
 
 ![DsxID setup](docs/screenshots/screenshot-onboarding.png)
 
 ## Quick start
 
-1. Run `DsxID.exe`.
+1. Run `DsxID.exe` on Windows, or `./DsxID` on Linux.
 2. Create an identity and choose a passphrase (at least 8 characters; longer is better).
-   Closing the window keeps DsxID running in the Windows notification area; use
-   the tray menu to open, lock, or quit.
+   On Windows, closing the window keeps DsxID running in the notification area;
+   use the tray menu to open, lock, or quit. On Linux, closing the window quits
+   the app (there is no tray yet).
 3. **Save a backup immediately** using the *Back up* button.
 4. Add the web SDK to your site, or run the included example:
 
@@ -50,6 +54,57 @@ signature.
 
 See [`web-sdk/README.md`](web-sdk/README.md) for the JavaScript SDK, backend
 contract, and security notes.
+
+## Downloads
+
+The current release is **0.1.0**. Builds are attached to
+[GitHub Releases](https://github.com/damiansyky/dsxid/releases/):
+
+- Windows: `DsxID.exe`
+- Linux 22.04 / Mint 21 / Debian 12: `DsxID-linux-amd64-webkit40-0.1.0.tar.gz`
+- Linux 24.04+ / Mint 22 / Debian 13: `DsxID-linux-amd64-webkit41-0.1.0.tar.gz`
+- Checksums: `DsxID-SHA256SUMS.txt`
+
+Verify the Windows download:
+
+```powershell
+Get-FileHash .\DsxID.exe -Algorithm SHA256
+```
+
+Verify Linux downloads (files you did not download are ignored):
+
+```bash
+sha256sum -c --ignore-missing DsxID-SHA256SUMS.txt
+```
+
+The full changes for this build are in [`RELEASE_NOTES.md`](RELEASE_NOTES.md).
+Linux run instructions are in [`DsxID-LINUX.txt`](DsxID-LINUX.txt).
+
+## Android starter kit (in development)
+
+[`android/`](android/) is a Jetpack Compose starter for the future Android app.
+It mirrors the desktop screens and design language, but uses **in-memory demo
+data**: real Keystore storage, Argon2id, AES-256-GCM, backups, and the mobile
+approval flow are not implemented yet. Do not ship it as a working identity app.
+It is not part of the current release.
+
+```powershell
+cd android
+.\gradlew.bat :app:assembleDebug
+```
+
+The debug APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
+The project includes launcher icons, a design kit, a security roadmap, and a
+GitHub Actions build:
+
+- [`android/README.md`](android/README.md)
+- [`android/SECURITY.md`](android/SECURITY.md)
+- [`docs/android/design-kit.md`](docs/android/design-kit.md)
+- [`.github/workflows/build-android.yml`](.github/workflows/build-android.yml)
+
+The desktop app is still the supported client. Android, Windows, and Linux share
+the same Ed25519 assertion format, so the Android client can eventually import a
+desktop backup and sign the same requests.
 
 ### E-shop profile
 
@@ -82,6 +137,21 @@ website; this page is a local history.
 Settings holds passphrase changes, encrypted backups, and the local data folder.
 The application window has a fixed size, so the layout stays consistent.
 
+The **Update** link beside the version at the bottom of the window opens
+[GitHub Releases](https://github.com/damiansyky/dsxid/releases/). On startup the
+app checks the GitHub Releases API once; when a newer tag exists, the link changes
+to **Update available** and a short notification appears. The check sends no
+identity or usage data. The **Donate** button next to it opens a short support
+dialog that recommends monthly GitHub Sponsors support; **Donate monthly** then
+opens [GitHub Sponsors](https://github.com/sponsors/damiansyky). GitHub Sponsors
+must be enabled for the account before publishing.
+
+**Tutorial** in the sidebar reopens the guided tour. It points out the identity
+card, copy/backup actions, updates, and lock control with short explanations.
+The tour starts automatically after the first unlock. The setup screen also has
+a **Take a quick tour** link for the identity form.
+
+![Guided tutorial](docs/screenshots/screenshot-tutorial.png)
 
 ![Settings](docs/screenshots/screenshot-settings.png)
 
@@ -113,7 +183,8 @@ these checks.
 | Challenge | 32 random bytes, short-lived, single-use |
 | Identifier | first 80 bits of SHA-256 of the public key, Base32 |
 
-Application data lives in `%APPDATA%\DsxID`:
+Application data lives in `%APPDATA%\DsxID` on Windows and `~/.config/DsxID` on
+Linux:
 
 - `identity.json` — encrypted private key,
 - `profile.json` — encrypted e-shop profile,
@@ -129,10 +200,11 @@ Application data lives in `%APPDATA%\DsxID`:
 The public site is **[https://dsxid.org/](https://dsxid.org/)**, deployed to
 GitHub Pages by [`.github/workflows/pages.yml`](.github/workflows/pages.yml)
 from the `landing/` folder only. The browser SDK is served at
-`https://dsxid.org/sdk/dsxid.js`, and the Windows build at
-`https://dsxid.org/download/DsxID.exe`.
+`https://dsxid.org/sdk/dsxid.js`, the Windows build at
+`https://dsxid.org/download/DsxID.exe`, and Linux packages are published on
+[GitHub Releases](https://github.com/damiansyky/dsxid/releases/).
 
-`landing/index.html` is a static product page using the same light Windows
+`landing/index.html` is a static product page using the same light desktop
 surfaces, Segoe UI typography, thin borders, and blue accent as the app. It is
 responsive and needs no build step. Preview it with:
 
@@ -155,7 +227,9 @@ in the approval dialog and only approve sign-ins you started.
 
 The bridge listens on IPv4 loopback only. It requires an explicit approval in the
 desktop app for every signature; it never exposes the private key to the page.
-The application has no telemetry and makes no external network calls.
+The application has no telemetry. On startup it makes one HTTPS request to the
+GitHub Releases API to check for a newer version; no identity, profile, or usage
+data is sent, and the check fails silently when offline.
 
 ### Man-in-the-middle protection
 
@@ -180,9 +254,10 @@ or a hosted relay. The signature format remains the same.
 
 ## Build from source
 
-Requirements: Go 1.26+, [Wails CLI](https://wails.io) 2.17, and WebView2 (already
-present on most Windows 10/11 systems). Node.js is only needed for the example
-website and the SDK helper. The desktop frontend is plain HTML/CSS/JS.
+Requirements: Go 1.26+, [Wails CLI](https://wails.io) 2.17, and platform
+dependencies. On Windows that means WebView2 (already present on most Windows
+10/11 systems). On Linux it means GTK 3 and WebKitGTK. Node.js is only needed for
+the example website and the SDK helper. The desktop frontend is plain HTML/CSS/JS.
 
 ```powershell
 go install github.com/wailsapp/wails/v2/cmd/wails@v2.17.1
@@ -201,6 +276,54 @@ wails build -clean -s -skipbindings -trimpath -nopackage
 The result is `build/bin/DsxID.exe`; the build script also copies it to the
 project root and to `landing/download/DsxID.exe`, which is the published
 download on dsxid.org.
+
+### Linux desktop
+
+Wails Linux builds need cgo plus GTK 3 and WebKitGTK development packages, so
+build them on Linux (or with the included GitHub Actions workflow) rather than
+cross-compiling from Windows.
+
+Ubuntu 22.04 / Debian 12:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev
+go install github.com/wailsapp/wails/v2/cmd/wails@v2.17.1
+wails build -clean -s -skipbindings -trimpath -nopackage
+```
+
+Ubuntu 24.04 and newer use WebKitGTK 4.1:
+
+```bash
+sudo apt-get install -y build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
+wails build -clean -s -skipbindings -trimpath -nopackage -tags webkit2_41
+```
+
+The result is `build/bin/DsxID`. Create a portable Linux package with a desktop
+entry and install script:
+
+```bash
+chmod +x scripts/package-linux.sh
+./scripts/package-linux.sh
+# -> build/package/DsxID-linux-amd64-0.1.0.tar.gz
+```
+
+Install it for the current user:
+
+```bash
+tar -xzf build/package/DsxID-linux-amd64-0.1.0.tar.gz -C /tmp
+cd /tmp/DsxID-linux-amd64
+./install.sh
+```
+
+The installer places the binary in `~/.local/bin`, the icon in the user icon
+theme, and `dsxid.desktop` in the application menu. Linux notifications use the
+D-Bus notification service. There is no Linux tray yet, so closing the window
+quits the app.
+
+The [`build-linux`](.github/workflows/build-linux.yml) workflow builds both
+WebKitGTK variants on demand and on release tags, and uploads the `.tar.gz`
+artifacts.
 
 Tests:
 
@@ -244,8 +367,9 @@ dialog.
 
 ```
 main.go                     Wails entrypoint and embedded frontend
-scripts/                    build scripts
-internal/app                application state, approvals, icon, tray, tests
+scripts/                    Windows build and Linux packaging scripts
+packaging/linux             .desktop entry and user install script
+internal/app                application state, approvals, tray, tests
 internal/identity           key generation and encryption
 internal/protocol           assertion format and signature verification
 internal/bridge             localhost signing bridge for websites
@@ -253,7 +377,14 @@ internal/approvals          local approved-account history
 internal/profile            encrypted e-shop profile
 web-sdk/                    browser SDK (obfuscated + source), verifier, example
 landing/                    dsxid.org landing page, hosted SDK, and download
+android/                    Jetpack Compose Android starter kit
+docs/android                Android design kit
+RELEASE_NOTES.md            release note for GitHub
+DsxID-LINUX.txt             Linux run instructions
+DsxID-SHA256SUMS.txt        checksums for release assets
 .github/workflows/pages.yml GitHub Pages deployment
+.github/workflows/build-linux.yml  Linux tar.gz artifacts
+.github/workflows/build-android.yml Android preview APK
 frontend/dist               desktop UI (static, no build step)
 docs/screenshots            README screenshots
 build/logo-source.png       original supplied logo
